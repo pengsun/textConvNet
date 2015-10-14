@@ -33,7 +33,7 @@ local loss = nn.ClassNLLCriterion()
 local iM = 3 -- module index for the pooling layer
 local set_numpool_one = function (szInput)
   sz = szInput - szConv + 1 -- size for the output at last layer
-  md.module[iM].kW, md.module[iM].dW = sz, sz -- size 1 for output
+  md.modules[iM].kW, md.modules[iM].dW = sz, sz -- size 1 for output
 end
 
 return md, loss, set_numpool_one
