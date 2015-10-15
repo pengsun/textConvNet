@@ -1,13 +1,18 @@
 require('torch')
+require('dataLoader')
 
---[[ data specs ]]--
+--[[ options ]]--
+opt = opt or {
+  dataSize = 'small'
+}
+
+--[[ training & testing raw data ]]--
 -- instance: n, M, C
 -- labes: n
 local trN, teN = 30, 10 -- #instances
 local C = 8 -- #channels
 local Mmin, Mmax = 12, 21 -- #words in a doc
 
---[[ training & testing raw data ]]--
 local gen_rand_data = function(n)
   X = {}
   for i = 1, n do
@@ -22,33 +27,19 @@ local gen_rand_data = function(n)
 
   return X, Y
 end
+
+if opt.dataSize == 'small' then
+  trN, teN = 10, 5
+end
+
 local trX, trY = gen_rand_data(trN)
 local teX, teY = gen_rand_data(teN)
 
 --[[ training & testing data loader ]]--
-do
-  local loader = torch.class('toyLoader')
+local tr, te = dataLoader(trX, trY), dataLoader(teX, teY)
 
-  function loader:__init(X, Y)
-    assert(#X == Y:size(1))
-    self.X = X
-    self.Y = Y
-    self.ind = torch.randperm(#X)
-  end
+print('[data]')
+print('#tr = ' .. tr:size() .. ', #te = ' .. te:size()) 
+print('\n')
 
-  function loader:size()
-    return #self.X
-  end
-  
-  function loader:randperm_ind()
-    self.ind = torch.randperm(#self.X)
-  end
-
-  function loader:get_datum(i)
-    xx = self.X[i]:clone()
-    yy = torch.FloatTensor(1):fill(self.Y[i])
-    return xx, yy
-  end
-end
-
-return toyLoader(trX, trY), toyLoader(teX, teY)
+return tr, te

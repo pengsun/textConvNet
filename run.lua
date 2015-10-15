@@ -2,11 +2,19 @@ require 'optim'
 require 'xlua'
 require 'sys'
 
+--[[ global options ]]--
+opt = opt or {
+  nThread = 2,
+  logPath = 'log/one',
+  dataSize = 'small',
+  maxEp = 6,
+}
+
 --[[ data ]]--
-local trData, teData = dofile 'data_toy.lua'
+local trData, teData = dofile'data_toy.lua'
 
 --[[ net ]]--
-local md, loss, set_numpool_one = dofile 'net_toy.lua'
+local md, loss, set_numpool_one = dofile'net_toy.lua'
 md:float(); loss:float();
 
 --[[ optimization ]]--
@@ -19,7 +27,7 @@ stOptim.learningRateDecay = 5e-7
 info, logger = dofile 'observer.lua'
 
 --[[ train & test ]]--
-epMax = 10
+local epMax = opt.epMax or 3
 param, gradParam = md:getParameters()
 for ep = 1, epMax do
   

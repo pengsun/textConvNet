@@ -36,4 +36,8 @@ local set_numpool_one = function (szInput)
   md.modules[iM].kW, md.modules[iM].dW = sz, sz -- size 1 for output
 end
 
+print('[net]')
+print(md)
+print('\n')
+
 return md, loss, set_numpool_one
