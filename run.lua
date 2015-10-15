@@ -5,17 +5,29 @@ require 'sys'
 --[[ global options ]]--
 opt = opt or {
   nThread = 2,
-  logPath = 'log/one',
-  dataSize = 'small',
-  maxEp = 6,
+  logPath = 'log/one', -- output path for log files
+  dataSize = 'full',
+  epMax = 12,  -- max epoches
+  teFreq = 3, -- test every teFreq epoches
+  isCuda = true,
 }
+print('[global options]')
+print(opt)
+if opt.isCuda then 
+  require('cunn')
+  print('switch to CUDA')
+end
+print('\n')
 
 --[[ data ]]--
-local trData, teData = dofile'data_toy.lua'
+local trData, teData = dofile'data_toy2.lua'
 
 --[[ net ]]--
-local md, loss, set_numpool_one = dofile'net_toy.lua'
+local md, loss, set_numpool_one = dofile'net_toy2.lua'
 md:float(); loss:float();
+if opt.isCuda then 
+  md:cuda(); loss:cuda();
+end
 
 --[[ optimization ]]--
 local stOptim = {}
@@ -45,6 +57,9 @@ for ep = 1, epMax do
       -- get one (instance, label) pair randomly
       ii = data.ind[i]
       input, target = data:get_datum(ii)
+      if opt.isCuda then
+        input, target = input:cuda(), target:cuda()
+      end
       
       -- closure doing all
       local feval = function (tmp)
@@ -80,8 +95,8 @@ for ep = 1, epMax do
     info.tr.ell[ep] = info.tr.ell[ep] / data:size()
     -- print
     print(info.tr.conf)
-    print(string.format('speed = %d data/s, or %f ms/data',
-        data:size()/time, time/data:size()*1000))
+    print(string.format('time = %ds, speed = %d data/s, or %f ms/data',
+        time, data:size()/time, time/data:size()*1000))
   end -- trian
 
   function test(data)
@@ -95,6 +110,9 @@ for ep = 1, epMax do
     for i = 1, data:size() do
       -- get one (instance, label) pair 
       input, target = data:get_datum(i)
+      if opt.isCuda then
+        input, target = input:cuda(), target:cuda()
+      end
       
       -- change the pooling window size to 
       -- enforce output size = 1
@@ -117,22 +135,25 @@ for ep = 1, epMax do
     info.te.ell[ep] = info.te.ell[ep] / data:size()
     -- print
     print(info.te.conf)
-    print(string.format('speed = %d data/s, or %f ms/data',
-        data:size()/time, time/data:size()*1000))    
+    print(string.format('time = %ds, speed = %d data/s, or %f ms/data',
+        time, data:size()/time, time/data:size()*1000))    
   end
   
   train(trData)
-  test(teData)
+  if ep % opt.teFreq == 0 then
+    test(teData)
+  end
   print('\n')
   
   -- move stuff in info to logger
-  --require('mobdebug').start()
-  logger.ell:add{info.tr.ell[ep], info.te.ell[ep]}
-  logger.err:add{info.tr.err[ep], info.te.err[ep]}
+--  logger.ell:add{info.tr.ell[ep], info.te.ell[ep]}
+--  logger.err:add{info.tr.err[ep], info.te.err[ep]}
+  logger.ell:add{info.tr.ell[ep]}
+  logger.err:add{info.te.err[ep]}
   
   -- plot
-  logger.ell:style{'-', '-'}
+  logger.ell:style{'lp'}
   logger.ell:plot()
-  logger.err:style{'-', '-'}
+  logger.err:style{'-'}
   logger.err:plot()
 end -- for ep
