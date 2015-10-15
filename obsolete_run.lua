@@ -20,13 +20,10 @@ end
 print('\n')
 
 --[[ data ]]--
-local trData, teData = dofile'data_toy3.lua'
-if opt.isCuda then
-  trData:cuda(); teData:cuda();
-end
+local trData, teData = dofile'data_toy2.lua'
 
 --[[ net ]]--
-local md, loss, set_numpool_one = dofile'net_toy3.lua'
+local md, loss, set_numpool_one = dofile'net_toy2.lua'
 md:float(); loss:float();
 if opt.isCuda then 
   md:cuda(); loss:cuda();
@@ -60,13 +57,16 @@ for ep = 1, epMax do
       -- get one (instance, label) pair randomly
       ii = data.ind[i]
       input, target = data:get_datum(ii)
---      if opt.isCuda then
---        input, target = input:cuda(), target:cuda()
---      end
+      if opt.isCuda then
+        input, target = input:cuda(), target:cuda()
+      end
       
       -- closure doing all
       local feval = function (tmp)
         gradParam:zero()
+        -- change the pooling window size to 
+        -- enforce output size = 1
+        set_numpool_one(input:size(1))
         -- fprop
         output = md:forward(input)
         f = loss:forward(output, target)
@@ -110,10 +110,13 @@ for ep = 1, epMax do
     for i = 1, data:size() do
       -- get one (instance, label) pair 
       input, target = data:get_datum(i)
---      if opt.isCuda then
---        input, target = input:cuda(), target:cuda()
---      end
+      if opt.isCuda then
+        input, target = input:cuda(), target:cuda()
+      end
       
+      -- change the pooling window size to 
+      -- enforce output size = 1
+      set_numpool_one(input:size(1))
       -- fprop
       output = md:forward(input)
       f = loss:forward(output, target)

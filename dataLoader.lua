@@ -1,4 +1,9 @@
-local loader = torch.class('dataLoader')
+--[[ data loader for word features representation
+X: List of FloatTensor 
+Y: FloatTensor
+]]--
+
+local loader = torch.class('loaderLT')
 
 function loader:__init(X, Y)
   assert(#X == Y:size(1))
@@ -17,10 +22,6 @@ end
 
 function loader:size()
   return #self.X
-end
-
-function loader:nchannel()
-  return self.X[1]:size(2)
 end
 
 function loader:randperm_ind()

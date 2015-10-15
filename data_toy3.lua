@@ -1,9 +1,8 @@
 --[[ toy data: randomly generated
 --#data = n
 --#words in doc = M (variable length)
---#channels(reduced vocabulary size) = C 
 data layout
---instance: {n} list, each entry: {M, C}, feature values in low dim space
+--instance: {n} list, each entry: {M} tensor of indices to vocabulary
 --labes: {n}, 1 or 2
 ]]--
 
@@ -16,21 +15,22 @@ opt = opt or {
 }
 
 --[[ training & testing raw data ]]--
-local trN, teN = 300, 300 -- #instances
-local C = 1024 -- #channels
+local trN, teN = 25000, 25000 -- #instances
+local V = 3000 -- #vocabulary size
 local Mmin, Mmax = 80, 120 -- #words in a doc
 
 local gen_rand_data = function(n)
+  -- instances
   X = {}
   for i = 1, n do
-    M = torch.floor( torch.uniform(Mmin, Mmax) ) 
-    X[i] = torch.randn(M, C, 'torch.FloatTensor')
+    -- #words for the i-th doc
+    local M = torch.floor( torch.uniform(Mmin, Mmax) ) 
+    local tmp = torch.rand(M, 'torch.FloatTensor')
+    X[i] = torch.ceil( tmp:mul(V) )
   end
--- labels
-  Y = torch.FloatTensor(n):apply(
-    function (elem)
-      return torch.bernoulli(0.5) + 1
-    end)
+  -- labels
+  local tmp = torch.rand(n, 'torch.FloatTensor')
+  Y = torch.ceil( tmp:mul(2) ) -- binary labels
 
   return X, Y
 end
@@ -47,8 +47,6 @@ local tr, te = loaderLT(trX, trY), loaderLT(teX, teY)
 
 print('[data]')
 print('#tr = ' .. tr:size() .. ', #te = ' .. te:size())
-assert(tr:nchannel()==te:nchannel())
-print('#channels = ' .. tr:nchannel())
 print('\n')
 
 return tr, te
