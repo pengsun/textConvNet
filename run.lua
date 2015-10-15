@@ -3,7 +3,7 @@ require 'xlua'
 require 'sys'
 
 --[[ data ]]--
-local data = dofile 'data_toy.lua'
+local trData, teData = dofile 'data_toy.lua'
 
 --[[ net ]]--
 local md, loss, set_numpool_one = dofile 'net_toy.lua'
@@ -33,10 +33,10 @@ for ep = 1, epMax do
     
     -- sgd over each datum
     time = sys.tic()------------------------------
-    for i = 1, data.size() do
+    for i = 1, data:size() do
       -- get one (instance, label) pair randomly
       ii = data.ind[i]
-      input, target = data.get_datum(ii)
+      input, target = data:get_datum(ii)
       
       -- closure doing all
       local feval = function (tmp)
@@ -63,7 +63,7 @@ for ep = 1, epMax do
       optim.sgd(feval, param, stOptim)
       
       -- print TODO: print loss stuff?
-      xlua.progress(i, data.size())
+      xlua.progress(i, data:size())
     end -- for i
     time = sys.toc(time)-------------------------
     
@@ -84,9 +84,9 @@ for ep = 1, epMax do
     
     -- test each datum
     time = sys.tic()------------------------------
-    for i = 1, data.size() do
+    for i = 1, data:size() do
       -- get one (instance, label) pair 
-      input, target = data.get_datum(i)
+      input, target = data:get_datum(i)
       
       -- change the pooling window size to 
       -- enforce output size = 1
@@ -99,9 +99,9 @@ for ep = 1, epMax do
       info.te.ell[ep] = info.tr.ell[ep] + f
       
       -- print TODO: print loss stuff?
-      xlua.progress(i, data.size())
+      xlua.progress(i, data:size())
     end -- for i
-    time = sys.toc(time)-------------------------
+    time = sys.toc(time)--------------------------
     
     -- update error, loss
     info.te.conf:updateValids()
@@ -113,8 +113,8 @@ for ep = 1, epMax do
         data:size()/time, time/data:size()*1000))    
   end
   
-  train(data)
-  test(data)
+  train(trData)
+  test(teData)
   print('\n')
   
   -- move stuff in info to logger
@@ -128,6 +128,3 @@ for ep = 1, epMax do
   logger.err:style{'-', '-'}
   logger.err:plot()
 end -- for ep
-
-
-
