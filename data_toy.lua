@@ -22,8 +22,8 @@ local gen_rand_data = function(n)
 
   return X, Y
 end
-trX, trY = gen_rand_data(trN)
-teX, teY = gen_rand_data(teN)
+local trX, trY = gen_rand_data(trN)
+local teX, teY = gen_rand_data(teN)
 
 --[[ training & testing data loader ]]--
 do
