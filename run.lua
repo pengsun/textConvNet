@@ -9,7 +9,7 @@ opt = opt or {
   dataSize = 'small',
   epMax = 12,  -- max epoches
   teFreq = 1, -- test every teFreq epoches
-  isCuda = false,
+  isCuda = true,
 }
 print('[global options]')
 print(opt)
@@ -72,7 +72,7 @@ for ep = 1, epMax do
         -- TODO: L1 L2 penality
         -- update error, loss
         info.tr.conf:updateValids()
-        info.tr.conf:add(output:squeeze(), target[1])
+        info.tr.conf:add(output, target[1])
         info.tr.ell[ep] = info.tr.ell[ep] + f
         --
         return f, gradParam
@@ -114,7 +114,7 @@ for ep = 1, epMax do
       local output = md:forward(input)
       local f = loss:forward(output, target)
       -- update error, loss
-      info.te.conf:add(output:squeeze(), target[1])
+      info.te.conf:add(output, target[1])
       info.te.ell[ep] = info.tr.ell[ep] + f
       
       -- print TODO: print loss stuff?

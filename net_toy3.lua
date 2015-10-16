@@ -19,8 +19,10 @@ require 'nn'
 --                  Max: dim 1 
 --  a2':  1, 256
 --------------------------------------------
+--                  Reshape: 256
+--  a3:   256
 --                  Linear: 256, 2
---  a3:   1, 2
+--  a3':  2
 
 
 --[[ model ]]--
@@ -37,6 +39,7 @@ md:add(nn.ReLU())
 md:add(nn.Max(1))
 md:add(nn.Dropout(0.5))
 -- Output Layer
+md:add(nn.Reshape(256, false))
 md:add(nn.Linear(256, 2)) -- binary classification
 md:add(nn.LogSoftMax())
 md:float()
