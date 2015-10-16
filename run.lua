@@ -6,10 +6,10 @@ require 'sys'
 opt = opt or {
   nThread = 2,
   logPath = 'log/one', -- output path for log files
-  dataSize = 'full',
+  dataSize = 'small',
   epMax = 12,  -- max epoches
   teFreq = 3, -- test every teFreq epoches
-  isCuda = true,
+  isCuda = false,
 }
 print('[global options]')
 print(opt)
@@ -21,13 +21,9 @@ print('\n')
 
 --[[ data ]]--
 local trData, teData = dofile'data_toy3.lua'
-if opt.isCuda then
-  trData:cuda(); teData:cuda();
-end
 
 --[[ net ]]--
 local md, loss, set_numpool_one = dofile'net_toy3.lua'
-md:float(); loss:float();
 if opt.isCuda then 
   md:cuda(); loss:cuda();
 end
@@ -60,9 +56,9 @@ for ep = 1, epMax do
       -- get one (instance, label) pair randomly
       ii = data.ind[i]
       input, target = data:get_datum(ii)
---      if opt.isCuda then
---        input, target = input:cuda(), target:cuda()
---      end
+      if opt.isCuda then
+        input, target = input:cuda(), target:cuda()
+      end
       
       -- closure doing all
       local feval = function (tmp)
@@ -110,9 +106,9 @@ for ep = 1, epMax do
     for i = 1, data:size() do
       -- get one (instance, label) pair 
       input, target = data:get_datum(i)
---      if opt.isCuda then
---        input, target = input:cuda(), target:cuda()
---      end
+      if opt.isCuda then
+        input, target = input:cuda(), target:cuda()
+      end
       
       -- fprop
       output = md:forward(input)
@@ -143,14 +139,10 @@ for ep = 1, epMax do
   print('\n')
   
   -- move stuff in info to logger
---  logger.ell:add{info.tr.ell[ep], info.te.ell[ep]}
---  logger.err:add{info.tr.err[ep], info.te.err[ep]}
   logger.ell:add{info.tr.ell[ep]}
   logger.err:add{info.te.err[ep]}
   
   -- plot
-  logger.ell:style{'lp'}
-  logger.ell:plot()
-  logger.err:style{'-'}
-  logger.err:plot()
+  logger.ell:style{'lp'}; logger.ell:plot();
+  logger.err:style{'-'}; logger.err:plot()
 end -- for ep

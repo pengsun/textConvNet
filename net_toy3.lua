@@ -39,9 +39,11 @@ md:add(nn.Dropout(0.5))
 -- Output Layer
 md:add(nn.Linear(256, 2)) -- binary classification
 md:add(nn.LogSoftMax())
+md:float()
 
 --[[ loss ]]--
 local loss = nn.ClassNLLCriterion()
+loss:float()
 
 print('[net]')
 print(md)
