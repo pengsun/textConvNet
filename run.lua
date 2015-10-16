@@ -6,7 +6,7 @@ require 'sys'
 opt = opt or {
   nThread = 2,
   logPath = 'log/one', -- output path for log files
-  dataSize = 'small',
+  dataSize = 'full',
   epMax = 12,  -- max epoches
   teFreq = 1, -- test every teFreq epoches
   isCuda = true,

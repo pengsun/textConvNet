@@ -16,7 +16,7 @@ opt = opt or {
 
 --[[ training & testing raw data ]]--
 local trN, teN = 25000, 25000 -- #instances
-local V = 3000 -- #vocabulary size
+local V = 30000 -- #vocabulary size
 local Mmin, Mmax = 80, 120 -- #words in a doc
 
 local gen_rand_data = function(n)
