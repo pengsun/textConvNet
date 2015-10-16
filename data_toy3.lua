@@ -43,7 +43,7 @@ local trX, trY = gen_rand_data(trN)
 local teX, teY = gen_rand_data(teN)
 
 --[[ training & testing data loader ]]--
-local tr, te = loaderLT(trX, trY), loaderLT(teX, teY)
+local tr, te = dgLT(trX, trY), dgLT(teX, teY)
 
 print('[data]')
 print('#tr = ' .. tr:size() .. ', #te = ' .. te:size())

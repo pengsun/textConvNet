@@ -1,18 +1,19 @@
---[[ data loader for word features representation
-X: List of FloatTensor 
-Y: FloatTensor
+--[[ Data Generator for List of Tensor data
+deviced for variable length sequential data
+X: List of FloatTensor, instances
+Y: FloatTensor, labels
 ]]--
 
-local loader = torch.class('loaderLT')
+local dg = torch.class('dgLT')
 
-function loader:__init(X, Y)
+function dg:__init(X, Y)
   assert(#X == Y:size(1))
   self.X = X
   self.Y = Y
   self.ind = torch.randperm(#X)
 end
 
-function loader:cuda()
+function dg:cuda()
   require'cutorch'
   for i = 1, #self.X do
     self.X[i] = self.X[i]:cuda()
@@ -20,15 +21,15 @@ function loader:cuda()
   self.Y = self.Y:cuda()
 end
 
-function loader:size()
+function dg:size()
   return #self.X
 end
 
-function loader:randperm_ind()
+function dg:randperm_ind()
   self.ind = torch.randperm(#self.X)
 end
 
-function loader:get_datum(i)
+function dg:get_datum(i)
   local xx = self.X[i]:clone()
   local yy = torch.FloatTensor(1):type(self.Y:type())
   yy:fill(self.Y[i])
