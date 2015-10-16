@@ -6,10 +6,12 @@ require 'sys'
 opt = opt or {
   nThread = 2,
   logPath = 'log/one', -- output path for log files
-  dataSize = 'full',
-  epMax = 12,  -- max epoches
-  teFreq = 1, -- test every teFreq epoches
+  dataSize = 'small',
+  epMax = 6,  -- max epoches
+  teFreq = 2, -- test every teFreq epoches
   isCuda = true,
+  C = 256,  -- #channels
+  V = 1000, -- #vocabulary
 }
 print('[global options]')
 print(opt)
@@ -23,7 +25,7 @@ print('\n')
 local trData, teData = dofile'data_toy3.lua'
 
 --[[ net ]]--
-local md, loss, set_numpool_one = dofile'net_toy3.lua'
+local md, loss, print_flow = dofile'net_toy3.lua'
 if opt.isCuda then 
   md:cuda(); loss:cuda();
 end
@@ -44,6 +46,8 @@ for ep = 1, epMax do
   
   function train(data)
     print('training epoch ' .. ep)
+    -- set training (enable dropout)
+    md:training()
     -- random shuffling
     data:randperm_ind()
     -- reset/init info
@@ -69,11 +73,20 @@ for ep = 1, epMax do
         -- bprop
         local gradOutput = loss:backward(output, target)
         md:backward(input, gradOutput)
+        
         -- TODO: L1 L2 penality
+        
         -- update error, loss
-        info.tr.conf:updateValids()
         info.tr.conf:add(output, target[1])
         info.tr.ell[ep] = info.tr.ell[ep] + f
+        
+        -- print debug info
+--        require('mobdebug').start()
+--        local str = '%d: out = (%f, %f), ' .. 
+--                    'f = %f, acc ell = %f'
+--        print(string.format(str, 
+--            i, output[1], output[2],
+--            f, info.tr.ell[ep]))
         --
         return f, gradParam
       end
@@ -81,22 +94,28 @@ for ep = 1, epMax do
       -- update parameters 
       optim.sgd(feval, param, stOptim)
       
-      -- print TODO: print loss stuff?
+      -- print
       xlua.progress(i, data:size())
+      --print_flow()
     end -- for i
     time = sys.toc(time)-----------------------------
     
     -- update error, loss
+    info.tr.conf:updateValids()
     info.tr.err[ep] = info.tr.conf.totalValid
     info.tr.ell[ep] = info.tr.ell[ep] / data:size()
     -- print
-    print(info.tr.conf)
+    --print(info.tr.conf)
+    print(string.format('ell = %f, err = %d %%',
+        info.tr.ell[ep], info.tr.err[ep]*100))
     print(string.format('time = %ds, speed = %d data/s, or %f ms/data',
         time, data:size()/time, time/data:size()*1000))
   end -- trian
 
   function test(data)
     print('testing epoch ' .. ep)
+    -- set testing (disable dropout)
+    md:evaluate()
     -- reset/init info
     info.te.conf:zero()
     info.te.ell[ep] = 0
@@ -113,14 +132,15 @@ for ep = 1, epMax do
       -- fprop
       local output = md:forward(input)
       local f = loss:forward(output, target)
+  
       -- update error, loss
       info.te.conf:add(output, target[1])
-      info.te.ell[ep] = info.tr.ell[ep] + f
+      info.te.ell[ep] = info.te.ell[ep] + f
       
-      -- print TODO: print loss stuff?
+      -- print
       xlua.progress(i, data:size())
     end -- for i
-    time = sys.toc(time)-----------------------------
+    time = sys.toc(time)-----------------------------------
     
     -- update error, loss
     info.te.conf:updateValids()
@@ -128,12 +148,18 @@ for ep = 1, epMax do
     info.te.ell[ep] = info.te.ell[ep] / data:size()
     -- print
     print(info.te.conf)
+    print(string.format('ell = %f, err = %d %%',
+        info.te.ell[ep], info.te.err[ep]*100))
     print(string.format('time = %ds, speed = %d data/s, or %f ms/data',
-        time, data:size()/time, time/data:size()*1000))    
+        time, data:size()/time, time/data:size()*1000))
   end
   
+  -- do training
   train(trData)
+  
+  -- do testing
   if ep % opt.teFreq == 0 then
+    print('\n')
     test(teData)
   end
   print('\n')
@@ -144,5 +170,5 @@ for ep = 1, epMax do
   
   -- plot
   logger.ell:style{'lp'}; logger.ell:plot();
-  logger.err:style{'-'};  logger.err:plot()
+  logger.err:style{'-'}; logger.err:plot();
 end -- for ep

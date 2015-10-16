@@ -14,19 +14,20 @@ function dg:__init(X, Y)
   self.ind = torch.randperm(#X)
 end
 
-function dg:cuda()
-  require'cutorch'
-  for i = 1, #self.X do
-    self.X[i] = self.X[i]:cuda()
-  end
-  self.Y = self.Y:cuda()
-end
+--function dg:cuda()
+--  require'cutorch'
+--  for i = 1, #self.X do
+--    self.X[i] = self.X[i]:cuda()
+--  end
+--  self.Y = self.Y:cuda()
+--end
 
 function dg:size()
   return #self.X
 end
 
 function dg:randperm_ind()
+  --self.ind = torch.range(1, #self.X)
   self.ind = torch.randperm(#self.X)
 end
 

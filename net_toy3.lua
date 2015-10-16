@@ -1,5 +1,3 @@
-require 'nn'
-
 --[[ data flow & size specs ]]--
 -- #vocabulary size = V (e.g., 30000)
 -- #input channel = 256
@@ -23,10 +21,17 @@ require 'nn'
 --  a3:   256
 --                  Linear: 256, 2
 --  a3':  2
-local V = 30000
-local C = 512
+
+require 'nn'
+
+opt = opt or {
+  V = 3000,
+  C = 512
+}
 
 --[[ model ]]--
+local V = opt.V
+local C = opt.C
 local md = nn:Sequential()
 -- word2vec Layer
 md:add(nn.LookupTable(V, C)) -- (vocabulary size, #channeds)
@@ -40,7 +45,7 @@ md:add(nn.ReLU())
 md:add(nn.Max(1))
 md:add(nn.Dropout(0.5))
 -- Output Layer
-md:add(nn.Reshape(256, false))
+md:add(nn.Reshape(256))
 md:add(nn.Linear(256, 2)) -- binary classification
 md:add(nn.LogSoftMax())
 md:float()
@@ -49,8 +54,22 @@ md:float()
 local loss = nn.ClassNLLCriterion()
 loss:float()
 
+--[[ manipulators ]]--
+local print_size = function()
+  print('model data size flow:')
+  local tmpl = '(%d): %s %s'
+  for i = 1, #md.modules do
+    local str = string.format(tmpl, i, 
+      md.modules[i]:__tostring(),
+      md.modules[i].output:size():__tostring__())
+    print(str)
+  end
+  print('\n')
+end
+
+
 print('[net]')
 print(md)
 print('\n')
 
-return md, loss
+return md, loss, print_size

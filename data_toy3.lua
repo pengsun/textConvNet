@@ -11,12 +11,13 @@ require('dgLT')
 
 --[[ options ]]--
 opt = opt or {
-  dataSize = 'small'
+  dataSize = 'small',
+  V = 3000, -- #vocabulary size
 }
 
 --[[ training & testing raw data ]]--
 local trN, teN = 25000, 25000 -- #instances
-local V = 30000 -- #vocabulary size
+local V = opt.V 
 local Mmin, Mmax = 80, 120 -- #words in a doc
 
 local gen_rand_data = function(n)
@@ -31,12 +32,12 @@ local gen_rand_data = function(n)
   -- labels
   local tmp = torch.rand(n, 'torch.FloatTensor')
   local Y = torch.ceil( tmp:mul(2) ) -- binary 1 or 2 labels
-
+  Y = Y:float()
   return X, Y
 end
 
 if opt.dataSize == 'small' then
-  trN, teN = 100, 50
+  trN, teN = 50, 10
 end
 
 local trX, trY = gen_rand_data(trN)
