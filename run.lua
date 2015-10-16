@@ -6,12 +6,12 @@ require 'sys'
 opt = opt or {
   nThread = 2,
   logPath = 'log/one', -- output path for log files
-  dataSize = 'small',
-  epMax = 6,  -- max epoches
-  teFreq = 2, -- test every teFreq epoches
+  dataSize = 'full',
+  epMax = 1,  -- max epoches
+  teFreq = 1, -- test every teFreq epoches
   isCuda = true,
-  C = 256,  -- #channels
-  V = 1000, -- #vocabulary
+  C = 1024,  -- #channels
+  V = 30000, -- #vocabulary
 }
 print('[global options]')
 print(opt)
@@ -96,6 +96,7 @@ for ep = 1, epMax do
       
       -- print
       xlua.progress(i, data:size())
+      --print(input:size())
       --print_flow()
     end -- for i
     time = sys.toc(time)-----------------------------
@@ -139,6 +140,8 @@ for ep = 1, epMax do
       
       -- print
       xlua.progress(i, data:size())
+      print(input:size())
+      print_flow()
     end -- for i
     time = sys.toc(time)-----------------------------------
     

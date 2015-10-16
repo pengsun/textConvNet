@@ -37,7 +37,7 @@ local gen_rand_data = function(n)
 end
 
 if opt.dataSize == 'small' then
-  trN, teN = 50, 10
+  trN, teN = 500, 1
 end
 
 local trX, trY = gen_rand_data(trN)

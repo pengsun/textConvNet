@@ -57,6 +57,7 @@ loss:float()
 --[[ manipulators ]]--
 local print_size = function()
   print('model data size flow:')
+  -- Modules
   local tmpl = '(%d): %s %s'
   for i = 1, #md.modules do
     local str = string.format(tmpl, i, 
