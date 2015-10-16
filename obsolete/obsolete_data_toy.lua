@@ -3,7 +3,7 @@
 --#words in doc = M (variable length)
 data layout
 --instance: {n} list, each entry: {M} tensor of indices to vocabulary
---labes: {n}, 1 or 2
+--labes: {n, 2}, 1-hot target for binary classification
 ]]--
 
 require('torch')
@@ -30,7 +30,12 @@ local gen_rand_data = function(n)
   end
   -- labels
   local tmp = torch.rand(n, 'torch.FloatTensor')
-  local Y = torch.ceil( tmp:mul(2) ) -- binary 1 or 2 labels
+  local Y = torch.zeros(n, 2) -- binary 0/1 labels
+  for i = 1, n do
+    if tmp[i] < 0.5 then Y[i][1] = 1
+    else Y[i][2] = 1 
+    end
+  end
 
   return X, Y
 end

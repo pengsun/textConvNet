@@ -8,7 +8,7 @@ opt = opt or {
   logPath = 'log/one', -- output path for log files
   dataSize = 'small',
   epMax = 12,  -- max epoches
-  teFreq = 3, -- test every teFreq epoches
+  teFreq = 1, -- test every teFreq epoches
   isCuda = false,
 }
 print('[global options]')
@@ -51,12 +51,12 @@ for ep = 1, epMax do
     info.tr.ell[ep] = 0
     
     -- sgd over each datum
-    time = sys.tic()------------------------------
+    local time = sys.tic()---------------------------
     for i = 1, data:size() do
       -- get one (instance, label) pair randomly
-      ii = data.ind[i]
-      input, target = data:get_datum(ii)
-      if opt.isCuda then
+      local ii = data.ind[i]
+      local input, target = data:get_datum(ii)
+      if opt.isCuda then 
         input, target = input:cuda(), target:cuda()
       end
       
@@ -64,15 +64,15 @@ for ep = 1, epMax do
       local feval = function (tmp)
         gradParam:zero()
         -- fprop
-        output = md:forward(input)
-        f = loss:forward(output, target)
+        local output = md:forward(input)
+        local f = loss:forward(output, target)
         -- bprop
-        gradOutput = loss:backward(output, target)
+        local gradOutput = loss:backward(output, target)
         md:backward(input, gradOutput)
         -- TODO: L1 L2 penality
         -- update error, loss
         info.tr.conf:updateValids()
-        info.tr.conf:add(output:squeeze(), target)
+        info.tr.conf:add(output:squeeze(), target[1])
         info.tr.ell[ep] = info.tr.ell[ep] + f
         --
         return f, gradParam
@@ -84,7 +84,7 @@ for ep = 1, epMax do
       -- print TODO: print loss stuff?
       xlua.progress(i, data:size())
     end -- for i
-    time = sys.toc(time)-------------------------
+    time = sys.toc(time)-----------------------------
     
     -- update error, loss
     info.tr.err[ep] = info.tr.conf.totalValid
@@ -102,25 +102,25 @@ for ep = 1, epMax do
     info.te.ell[ep] = 0
     
     -- test each datum
-    time = sys.tic()------------------------------
+    local time = sys.tic()---------------------------------
     for i = 1, data:size() do
       -- get one (instance, label) pair 
-      input, target = data:get_datum(i)
-      if opt.isCuda then
+      local input, target = data:get_datum(i)
+      if opt.isCuda then 
         input, target = input:cuda(), target:cuda()
       end
       
       -- fprop
-      output = md:forward(input)
-      f = loss:forward(output, target)
+      local output = md:forward(input)
+      local f = loss:forward(output, target)
       -- update error, loss
-      info.te.conf:add(output:squeeze(), target)
+      info.te.conf:add(output:squeeze(), target[1])
       info.te.ell[ep] = info.tr.ell[ep] + f
       
       -- print TODO: print loss stuff?
       xlua.progress(i, data:size())
     end -- for i
-    time = sys.toc(time)--------------------------
+    time = sys.toc(time)-----------------------------
     
     -- update error, loss
     info.te.conf:updateValids()
@@ -144,5 +144,5 @@ for ep = 1, epMax do
   
   -- plot
   logger.ell:style{'lp'}; logger.ell:plot();
-  logger.err:style{'-'}; logger.err:plot()
+  logger.err:style{'-'};  logger.err:plot()
 end -- for ep

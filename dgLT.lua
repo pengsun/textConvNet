@@ -1,13 +1,14 @@
 --[[ Data Generator for List of Tensor data
 deviced for variable length sequential data
-X: List of FloatTensor, instances
-Y: FloatTensor, labels
+X: {n} List of Tensor, instances
+Y: {n, K} Tensor, labels
 ]]--
 
 local dg = torch.class('dgLT')
 
 function dg:__init(X, Y)
   assert(#X == Y:size(1))
+  assert(Y:dim() == 1, 'tensor Y must be in size {n}')
   self.X = X
   self.Y = Y
   self.ind = torch.randperm(#X)
