@@ -31,6 +31,7 @@ local fn_teY = 'imdb-test.cat'
 
 --[[ helper functions ]]--
 local read_vocab = function (ffn)
+  assert(path.isfile(ffn), ffn .. 'not exists!')
   local lines = utils.readlines(ffn)
   -- each line: word count
   local vocab = {}
@@ -43,6 +44,7 @@ end
 
 local read_tokAsIndex = function (ffn, vocab)
   assert(vocab)
+  assert(path.isfile(ffn), ffn .. ' not exists!')
   local lines = utils.readlines(ffn)
   -- each line: a sequence of words
   
@@ -69,6 +71,7 @@ local read_tokAsIndex = function (ffn, vocab)
 end
 
 local read_catAsIndex = function (ffn)
+  assert(path.isfile(ffn), ffn .. ' not exists!')
   local lines = utils.readlines(ffn)
   -- each line: pos (or neg)
   local cat = torch.FloatTensor(#lines)
@@ -170,7 +173,7 @@ local subsample_XY = function(X, Y, n)
   return newX, newY
 end
 if opt.dataSize == 'small' then
-  trN, teN = 10, 5
+  trN, teN = 100, 50
   trX, trY = subsample_XY(trX, trY, trN)
   teX, teY = subsample_XY(teX, teY, teN)
 end

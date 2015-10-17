@@ -5,13 +5,13 @@ require 'sys'
 --[[ global options ]]--
 opt = opt or {
   nThread = 2,
-  logPath = 'log/imdb_full_C256', -- output path for log files
+  logPath = 'log/imdb_full_C1024', -- output path for log files
   dataSize = 'full',
   epMax = 100,  -- max epoches
   teFreq = 5, -- test every teFreq epoches
   isCuda = true,
-  gpuInd = 1, -- gpu #
-  C = 256,   -- #channels
+  gpuInd = 2, -- gpu #
+  C = 1024,   -- #channels
   V = 30000, -- #vocabulary
 }
 print('[global options]')

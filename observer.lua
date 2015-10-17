@@ -24,7 +24,7 @@ logger.err:setNames{'testing error'}
 logger.ell:setNames{'training loss'}
 
 print('[observer]')
-print('log path: ' .. curdir)
+print('log path: ' .. paths.concat(curdir,opt.logPath))
 print('\n')
 
 return info, logger
