@@ -25,8 +25,8 @@
 require 'nn'
 
 opt = opt or {
-  V = 3000,
-  C = 512
+  V = 30000,
+  C = 512,
 }
 
 --[[ model ]]--
@@ -45,7 +45,7 @@ md:add(nn.ReLU())
 md:add(nn.Max(1))
 md:add(nn.Dropout(0.5))
 -- Output Layer
---md:add(nn.Reshape(256))
+md:add(nn.Reshape(256))
 md:add(nn.Linear(256, 2)) -- binary classification
 md:add(nn.LogSoftMax())
 md:float()

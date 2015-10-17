@@ -5,12 +5,12 @@ require 'sys'
 --[[ global options ]]--
 opt = opt or {
   nThread = 2,
-  logPath = 'log/one', -- output path for log files
-  dataSize = 'full',
-  epMax = 1,  -- max epoches
-  teFreq = 1, -- test every teFreq epoches
-  isCuda = true,
-  C = 1024,  -- #channels
+  logPath = 'log/imdb_small', -- output path for log files
+  dataSize = 'small',
+  epMax = 2,  -- max epoches
+  teFreq = 10, -- test every teFreq epoches
+  isCuda = false,
+  C = 512,   -- #channels
   V = 30000, -- #vocabulary
 }
 print('[global options]')
@@ -22,18 +22,18 @@ end
 print('\n')
 
 --[[ data ]]--
-local trData, teData = dofile'data_toy3.lua'
+local trData, teData = dofile'data_imdb.lua'
 
 --[[ net ]]--
-local md, loss, print_flow = dofile'net_toy3.lua'
+local md, loss, print_flow = dofile'net_imdb.lua'
 if opt.isCuda then 
   md:cuda(); loss:cuda();
 end
 
 --[[ optimization ]]--
 local stOptim = {}
-stOptim.learningRate = 0.05
-stOptim.momentum = 0.005
+stOptim.learningRate = 0.005
+stOptim.momentum = 0.5
 stOptim.learningRateDecay = 5e-7
 
 --[[ observer: log, display... ]]
@@ -81,12 +81,11 @@ for ep = 1, epMax do
         info.tr.ell[ep] = info.tr.ell[ep] + f
         
         -- print debug info
---        require('mobdebug').start()
---        local str = '%d: out = (%f, %f), ' .. 
---                    'f = %f, acc ell = %f'
---        print(string.format(str, 
---            i, output[1], output[2],
---            f, info.tr.ell[ep]))
+        local str = '%d: out = (%f, %f), ' .. 
+                    'f = %f, acc ell = %f'
+        print(string.format(str, 
+            i, output[1], output[2],
+            f, info.tr.ell[ep]))
         --
         return f, gradParam
       end
@@ -96,6 +95,7 @@ for ep = 1, epMax do
       
       -- print
       xlua.progress(i, data:size())
+      -- print debug info
       --print(input:size())
       --print_flow()
     end -- for i
@@ -140,8 +140,9 @@ for ep = 1, epMax do
       
       -- print
       xlua.progress(i, data:size())
-      print(input:size())
-      print_flow()
+      -- print debug info
+      --print(input:size())
+      --print_flow()
     end -- for i
     time = sys.toc(time)-----------------------------------
     
