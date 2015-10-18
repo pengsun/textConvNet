@@ -6,6 +6,7 @@
 -- #words in doc = M (e.g., 85)
 
 85
+------------------------------------
         lookup table: V, C
 85, C
         pool: 2
@@ -27,11 +28,13 @@
 1, 64
         reshape: 64
 64
-        Linear: 64
-64
         Dropout: 0.5
 64
-        Linear: 2
+        Linear: 64, 64      
+------------------------------------       
+64
+        Linear: 64, 2
+------------------------------------
 2
 ]]--
 
@@ -48,18 +51,26 @@ local C = opt.C
 local md = nn:Sequential()
 -- word2vec Layer
 md:add(nn.LookupTable(V, C)) -- (vocabulary size, #channeds)
--- ConvPool Layer I
-md:add(nn.TemporalConvolution(C, 256, 3))
+md:add(nn.TemporalMaxPooling(2,2))
+-- ConvConvPool Layer I
+md:add(nn.TemporalConvolution(C, 64, 2))
+md:add(nn.ReLU())
+md:add(nn.TemporalConvolution(64, 64, 2))
 md:add(nn.ReLU())
 md:add(nn.TemporalMaxPooling(2, 2))
--- ConvPool Layer II
-md:add(nn.TemporalConvolution(256, 256, 3))
+-- ConvConvPool Layer II
+md:add(nn.TemporalConvolution(64, 64, 2))
+md:add(nn.ReLU())
+md:add(nn.TemporalConvolution(64, 64, 2))
 md:add(nn.ReLU())
 md:add(nn.Max(1))
+-- full connection
+md:add(nn.Reshape(64))
 md:add(nn.Dropout(0.5))
+md:add(nn.Linear(64, 64))
+md:add(nn.ReLU())
 -- Output Layer
-md:add(nn.Reshape(256))
-md:add(nn.Linear(256, 2)) -- binary classification
+md:add(nn.Linear(64, 2))
 md:add(nn.LogSoftMax())
 md:float()
 
