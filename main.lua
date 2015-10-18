@@ -1,3 +1,5 @@
+--[[ main logic to do training & testing ]]--
+
 require 'optim'
 require 'xlua'
 require 'sys'
@@ -5,14 +7,16 @@ require 'sys'
 --[[ global options ]]--
 opt = opt or {
   nThread = 2,
-  logPath = 'log/imdb_full_C128', -- output path for log files
+  logPath = 'log/imdb_full_C1024', -- output path for log files
   dataSize = 'full',
   epMax = 100,  -- max epoches
   teFreq = 5, -- test every teFreq epoches
   isCuda = true,
-  gpuInd = 1, -- gpu #
-  C = 128,   -- #channels
+  gpuInd = 2, -- gpu #
+  C = 1024,   -- #channels
   V = 30000, -- #vocabulary
+  fnData = 'data_imdb.lua', -- filie name for data generator
+  fnModel = 'net_imdb.lua', -- file name for model
 }
 print('[global options]')
 print(opt)
@@ -25,10 +29,10 @@ end
 print('\n')
 
 --[[ data ]]--
-local trData, teData = dofile'data_imdb.lua'
+local trData, teData = dofile(opt.fnData)
 
 --[[ net ]]--
-local md, loss, print_flow = dofile'net_imdb.lua'
+local md, loss, print_flow = dofile(opt.fnModel)
 if opt.isCuda then 
   md:cuda(); loss:cuda();
 end
