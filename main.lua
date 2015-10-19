@@ -7,16 +7,23 @@ require 'sys'
 --[[ global options ]]--
 opt = opt or {
   nThread = 2,
-  logPath = 'log/imdb_full_C1024', -- output path for log files
-  dataSize = 'full',
-  epMax = 100,  -- max epoches
-  teFreq = 5, -- test every teFreq epoches
+  logPath = 'log/imdb_small_toy', -- output path for log files
+  dataSize = 'small',
+  epMax = 10,  -- max epoches
+  teFreq = 2, -- test every teFreq epoches
   isCuda = true,
-  gpuInd = 2, -- gpu #
+  gpuInd = 1, -- gpu #
   C = 1024,   -- #channels
   V = 30000, -- #vocabulary
   fnData = 'data_imdb.lua', -- filie name for data generator
-  fnModel = 'net_imdb.lua', -- file name for model
+  fnModel = './net/toy3.lua', -- file name for model
+  stOptim =  {
+    learningRate = 1,
+    learningRateDecay = 1e-7,
+    weightDecay = 0.0005,
+    momentum = 0.5,
+  },
+  shrinkFreq = 4, -- shrink every # iteration
 }
 print('[global options]')
 print(opt)
@@ -38,10 +45,13 @@ if opt.isCuda then
 end
 
 --[[ optimization ]]--
-local stOptim = {}
-stOptim.learningRate = 0.005
-stOptim.momentum = 0.5
-stOptim.learningRateDecay = 5e-7
+local stOptim = opt.stOptim or {
+  learningRate = 1,
+  learningRateDecay = 1e-7,
+  weightDecay = 0.0005,
+  momentum = 0.5,
+}
+local shrinkFreq = opt.shrinkFreq or 25 
 
 --[[ observer: log, display... ]]
 info, logger = dofile 'observer.lua'
@@ -60,6 +70,11 @@ for ep = 1, epMax do
     -- reset/init info
     info.tr.conf:zero()
     info.tr.ell[ep] = 0
+    -- shrink learningRate when necessary
+    if ep % shrinkFreq == 0 then 
+      print('perform learningRate shrinking...')
+      stOptim.learningRate = stOptim.learningRate / 2
+    end
     
     -- sgd over each datum
     local time = sys.tic()---------------------------
