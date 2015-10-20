@@ -3,6 +3,8 @@
 require 'optim'
 require 'xlua'
 require 'sys'
+require 'pl.path'
+require 'pl.file'
 
 --[[ global options ]]--
 opt = opt or {
@@ -15,7 +17,7 @@ opt = opt or {
   gpuInd = 1, -- gpu #
   C = 1024,   -- #channels
   V = 30000, -- #vocabulary
-  fnData = 'data_imdb.lua', -- filie name for data generator
+  fnData = 'dataset/imdb.lua', -- filie name for data generator
   fnModel = './net/toy3.lua', -- file name for model
   stOptim =  {
     learningRate = 1,
@@ -54,7 +56,8 @@ local stOptim = opt.stOptim or {
 local shrinkFreq = opt.shrinkFreq or 25 
 
 --[[ observer: log, display... ]]
-info, logger = dofile 'observer.lua'
+info, logger, write_opt_net = dofile 'observer.lua'
+write_opt_net(opt, md)
 
 --[[ train & test ]]--
 local epMax = opt.epMax or 3

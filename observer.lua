@@ -23,8 +23,21 @@ local logger = {
 logger.err:setNames{'testing error'}
 logger.ell:setNames{'training loss'}
 
+--[[ write opt, net ]]--
+local write_opt_net = function (opt, md)
+  --require('mobdebug').start()
+  if not path.isdir(opt.logPath) then
+    path.mkdir(opt.logPath)
+  end
+  local fn = path.join(opt.logPath, 'opt_net.txt')
+  local str = 'opt = \n' .. xlua.table2string(opt, true) .. 
+              '\n\n' .. md:__tostring()
+  
+  file.write(fn, str)
+end
+
 print('[observer]')
 print('log path: ' .. paths.concat(curdir,opt.logPath))
 print('\n')
 
-return info, logger
+return info, logger, write_opt_net
