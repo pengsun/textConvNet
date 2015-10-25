@@ -173,7 +173,7 @@ local subsample_XY = function(X, Y, n)
   return newX, newY
 end
 if opt.dataSize == 'small' then
-  trN, teN = 100, 50
+  trN, teN = 300, 200
   trX, trY = subsample_XY(trX, trY, trN)
   teX, teY = subsample_XY(teX, teY, teN)
 end

@@ -59,20 +59,23 @@ md:float()
 
 --[[ weight initialization ]]--
 local initConv = function()
+  print('re-init conv')
   for k, v in pairs(md:findModules('nn.TemporalConvolution')) do
     local n = v.kW * v.inputFrameSize
     v.weight:normal(0, math.sqrt(2/n))
     v.bias:zero()
   end
 end
---local initLookup = function()
---  for k, v in pairs(md:findModules('nn.LookupTable')) do
---    local n = opt.C
---    v.weight:normal(0, math.sqrt(2/n))
---  end
---end
-initConv()
+local initLookup = function()
+  print('re-init lookup table')
+  for k, v in pairs(md:findModules('nn.LookupTable')) do
+    local n = opt.V
+    v.weight:normal(0, math.sqrt(2/n))
+  end
+end
+--initConv()
 --initLookup()
+
 
 --[[ loss ]]--
 local loss = nn.ClassNLLCriterion()

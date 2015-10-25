@@ -13,9 +13,9 @@ local C = opt.C
 local md = nn:Sequential()
 -- word2vec Layer
 md:add(nn.LookupTable(V, C)) -- (vocabulary size, #channeds)
-md:add(nn.Dropout(0.5))
+--md:add(nn.Dropout(0.5))
 -- ConvPool Layer I
-md:add(nn.TemporalConvolution(C, 1000, 3))
+md:add(nn.TemporalConvolution(C, 1000, 4))
 md:add(nn.ReLU(true))
 md:add(nn.Max(1))
 md:add(nn.Dropout(0.5))
@@ -26,6 +26,18 @@ md:add(nn.LogSoftMax())
 md:float()
 
 --[[ weight initialization ]]--
+local reinit = function()
+  local std = 0.05
+  for k, v in ipairs(md.modules) do
+    if v.weight then
+      v.weight:normal(0, std)
+    end
+    if v.bias then
+      v.bias:zero()
+    end
+  end
+end
+reinit()
 
 --[[ loss ]]--
 local loss = nn.ClassNLLCriterion()

@@ -17,7 +17,7 @@ md:add(nn.Dropout(0.5))
 -- ConvPool Layer I
 md:add(nn.TemporalConvolution(C, 256, 3))
 md:add(nn.ReLU())
-md:add(nn.TemporalMaxPooling(3, 3))
+md:add(nn.TemporalMaxPooling(2, 2))
 md:add(nn.Dropout(0.5))
 -- ConvPool Layer II
 md:add(nn.TemporalConvolution(256, 256, 3))
@@ -26,13 +26,44 @@ md:add(nn.Max(1))
 md:add(nn.Dropout(0.5))
 -- Full Connection Layer
 md:add(nn.Reshape(256))
-md:add(nn.Dropout(0.5))
-md:add(nn.Linear(256, 1024))
+md:add(nn.Linear(256, 256))
 md:add(nn.Dropout(0.5))
 -- Output Layer
-md:add(nn.Linear(1024, 2)) -- binary classification
+md:add(nn.Linear(256, 2)) -- binary classification
 md:add(nn.LogSoftMax())
 md:float()
+
+--[[ weight initialization ]]--
+local old_reinit = function()
+  local std = 0.01
+  require('mobdebug').start()
+  -- Lookup Table
+  for k, v in pairs(md:findModules('nn.LookupTable')) do
+--    local n = opt.V
+--    v.weight:normal(0, math.sqrt(2/n))
+    v.weight:normal(0, std)
+  end
+  
+  -- Conv
+  for k, v in pairs(md:findModules('nn.TemporalConvolution')) do
+--    local n = opt.V
+--    v.weight:normal(0, math.sqrt(2/n))
+    v.weight:normal(0, std)
+    v.bias:zero()
+  end
+end
+local reinit = function()
+  local std = 0.1
+  for k, v in ipairs(md.modules) do
+    if v.weight then
+      v.weight:normal(0, std)
+    end
+    if v.bias then
+      v.bias:zero()
+    end
+  end
+end
+reinit()
 
 --[[ loss ]]--
 local loss = nn.ClassNLLCriterion()
